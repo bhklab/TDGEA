@@ -1,0 +1,40 @@
+ID,Dataset,PMID,Dataset_accession,Platform_description,Platform,Notes,Patients,Genes,Probes,Publication_date
+1,CAL,17157792,E-TABM-158,Affymetrix HGU,Affymetrix HGU,Dataset of breast cancer patients from the University of California San Francisco and the California Pacific Medical Center,118,12688,21169,2006
+2,DFHCC,20098429,GSE19615,Affymetrix HGU,GPL570,Dana-Farber Harvard Cancer Center (United States),115,20282,42447,2010
+3,DFHCC2,20100965,GSE18864,Affymetrix HGU,GPL570,Dana-Farber Harvard Cancer Center (United States),84,20282,42447,2010
+4,DFHCC3,16473279,GSE3744,Affymetrix HGU,GPL570,Dana-Farber Harvard Cancer Center (United States),40,20282,42447,2010
+5,DUKE,16273092,GSE3143,Affymetrix HGU95,GPL8300,Duke university hospital (United States),171,8836,12085,2006
+6,DUKE2,18024211,GSE6861,Affymetrix X3P,GPL1352,Duke university hospital (United States),160,19700,45490,2007
+7,EMC2,19421193,GSE12276,Affymetrix HGU,GPL570,Erasmus Medical Center (The Netherlands),204,20282,42447,2009
+8,EORTC10994,15897907,GSE1561,Affymetrix HGU,GPL96,Trial number 10994 from the European Organization for Research and Treatment of Cancer Breast Cancer (Europe),49,12752,20967,2005
+9,EXPO,Erin Curley ecurley@intgen.org,GSE2109,Affymetrix HGU,GPL570,Expression project for oncology large dataset of microarray data published by the International Genomics Consortium,353,20282,42447,NA
+10,FNCLCC,17659439,GSE7017,In-house cDNA,GPL4819,F_d_ration Nationale des Centres de Lutte contre le Cancer (France),150,5107,6064,2008
+11,HLP,19688261,E-TABM-543,Illumina,Illumina,University Hospital La Paz (Spain),53,19451,26536,2010
+12,IRB,18297396,GSE5460,Affymetrix HGU,GPL570,Dana-Farber Harvard Cancer Center (United States),129,20282,54675,2006
+13,KOO,12747878,Authors' website,Affymetrix HGU95,Affymetrix HGU95,Koo Foundation Sun Yat-Sen Cancer Centre (Taiwan),88,254,280,2003
+14,LUND,18430221,GSE31863,Swegene,GPL14374,Lund University Hospital (Sweden),143,10388,11154,2008
+15,LUND2,17452630,GSE5325,Swegene,GPL3883,Lund University Hospital (Sweden),105,7913,22008,2007
+16,MAINZ,18593943,GSE11121,Affymetrix HGU,GPL96,Mainz hospital (Germany),200,12752,20967,2008
+17,MAQC2,20064235,GSE20194,Affymetrix HGU,GPL96///GPL570///GPL1261,Microarray quality control consortium (United States),230,12752,20967,2010
+18,MCCC,19960244,GSE19177,Illumina,GPL6106,Peter MacCallum Cancer Centre (Australia),75,14953,19048,2010
+19,MDA4,16896004,MDACC DB,Affymetrix HGU,Affymetrix HGU,MD Anderson Cancer Center (United States),129,12688,21169,2006
+20,MSK,16049480,GSE2603,Affymetrix HGU,GPL96,Memorial Sloan-Kettering (United States),99,12752,20967,2005
+21,MUG,18592372,GSE10510,Operon,GPL6486,Medical University of Graz (Austria),152,10715,14288,2009
+22,NCCS,18636107,GSE5364,Affymetrix HGU,GPL96,National Cancer Centre of Singapore (Singapore),183,12752,20967,2008
+23,NCI,12917485,Authors' website,In-house cDNA,In-house cDNA,National Cancer Institute (United States),99,4112,5154,2003
+24,NKI,12490681/11823860,Rosetta Inpharmatics,Agilent,Agilent,National Kanker Instituut (The Netherlands),337,13116,14960,2002
+25,PNC,21910250,GSE20711,Affymetrix HGU,GPL570,,92,20282,42447,2011
+26,STK,16280042,GSE1456,Affymetrix HGU,GPL97///GPL96,Stockholm,159,18434,36178,2005
+27,STNO2,12829800,GSE4382,In-house cDNA,GPL180///GPL2776///GPL2777,Stanford/Norway (United States and Norway),118,3228,3663,2003
+28,TRANSBIG,17545524,GSE7390,Affymetrix HGU,GPL96,Dataset collected by the TransBIG consortium (Europe),198,12752,20967,2007
+29,UCSF,17428335/14612510,Authors' website,In-house cDNA,In-house cDNA,University of California San Francisco (United States),162,6275,8015,2007
+30,UNC4,20813035,GSE18229,Agilent,GPL885///GPL887///GPL1390,University of Northern California (United States),305,5025,5420,2007
+31,UNT,16478745/17401012,GSE2990,Affymetrix HGU,Affymetrix HGU,Cohort of untreated breast cancer patients from the Oxford Radcliffe (United Kingdom) and Karolinska (Sweden) hospital,133,18009,36084,2010
+32,UPP,16141321,GSE3494,Affymetrix HGU,GPL570,Uppsala hospital (Sweden),251,18434,36178,2005
+33,VDX,17420468/15721472,GSE2034/GSE5327,Affymetrix HGU,Affymetrix HGU,Veridex (The Netherlands),344,12688,21169,2007
+34,METABRIC,22522925,,METABRIC,METABRIC,,2136,24924,36155,2012
+35,TCGA,23000897,,TCGA,TCGA,The Cancer Genome Atlas,1073,19405,19504,2012
+36,GSE25066,21558518,GSE25066,Affymetrix HGU,GPL96,Nuvera Biosciences,508,12752,20967,2010
+37,GSE32646,22320227,GSE32646,Affymetrix HGU,GPL570,Osaka University,115,20282,42437,2012
+38,GSE58644,25284793,GSE58644,Affymetrix Gene1.0ST,GPL6244,McGill University,321,20202,21462,2014
+39,GSE48091,26077471,GSE48091,Affymetrix RSTA,GPL10379,Karolinska Institutet,623,12917,23246,2015
