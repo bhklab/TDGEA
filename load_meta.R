@@ -67,6 +67,7 @@ get_cel_chip <- function(filename) {
 
 
 ### Main ######################################################################
+# Organize data for data table
 cel_files <- list.files(
     pattern = "CEL",
     full.names = TRUE,
@@ -80,14 +81,39 @@ cel_samples <- sapply(
     USE.NAMES = FALSE
 );
 cel_datetimes <- sapply(cel_files, get_cel_datetime, USE.NAMES = FALSE);
+cel_means_rma <- rep(NA, length(cel_files));
+cel_means_mas5 <- rep(NA, length(cel_files));
+cel_medians_rma <- rep(NA, length(cel_files));
+cel_medians_mas5 <- rep(NA, length(cel_files));
 
-cel_table <- data.table(
-    cel_samples,
-    cel_files,
-    cel_datetimes
+# cel_table <- data.table(
+#     cel_samples,
+#     cel_files,
+#     cel_datetimes,
+#     cel_means_rma,
+#     cel_medians_rma
+# );
+# names(cel_table) <- c("Sample", "Path", "DateTime", "RMA_Mean", "RMA_Median");
+
+# Histogram of dates
+length_out <- 10;
+delta <- (max(cel_datetimes, na.rm = TRUE) - min(cel_datetimes, na.rm = TRUE))/length_out;
+ix <- seq(min(cel_datetimes, na.rm = TRUE) - delta, max(cel_datetimes, na.rm = TRUE), length.out = length_out + 1);
+png("GPL570_dates_histogram.png", width = 3000, height = 1800, res = 300);
+hist(
+    cel_datetimes,
+    xaxt = "n",
+    xlab = "",
+    main = ""
 );
-names(cel_table) <- c("Sample", "Path", "DateTime");
+title("Dates of GPL570 chips");
+axis(
+    1,
+    at = ix,
+    labels = format(as.POSIXct(ix, origin="1970-01-01"), format= "%Y-%M-%d"),
+    las = 2,
+    cex.axis = 0.75
+);
+dev.off();
 
-# data_affy <- ReadAffy(filenames = cel_files);
-# data_affy_mas5 <- affy::mas5(data_affy);
-# data_affy_rma <- affy::rma(data_affy);
+
