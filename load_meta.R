@@ -52,6 +52,19 @@ get_cel_datetime <- function(filename) {
     }
 }
 
+# get_cel_chip
+# Description:
+#   Get CEL chip type (adapated from code by Matthew McCall)
+# Inputs:
+#   filename:    CEL file path
+# Outputs:
+#   chip type
+get_cel_chip <- function(filename) {
+	require(affyio);
+	h <- affyio::read.celfile.header(filename, info="full");
+	return(as.character(h$cdfName));
+}
+
 
 ### Main ######################################################################
 cel_files <- list.files(
@@ -59,9 +72,22 @@ cel_files <- list.files(
     full.names = TRUE,
     recursive = TRUE
 );
+cel_samples <- sapply(
+    cel_files,
+    function(x) {
+        return(sub(pattern = "(.*?)\\..*$", replacement = "\\1", basename(x)));
+    },
+    USE.NAMES = FALSE
+);
 cel_datetimes <- sapply(cel_files, get_cel_datetime, USE.NAMES = FALSE);
+
 cel_table <- data.table(
+    cel_samples,
     cel_files,
     cel_datetimes
 );
-names(cel_table) <- c("Path", "DateTime");
+names(cel_table) <- c("Sample", "Path", "DateTime");
+
+# data_affy <- ReadAffy(filenames = cel_files);
+# data_affy_mas5 <- affy::mas5(data_affy);
+# data_affy_rma <- affy::rma(data_affy);
