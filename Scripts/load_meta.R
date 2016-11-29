@@ -41,7 +41,6 @@ list_dirs <- function(path=".", pattern=NULL, all.dirs=FALSE, full.names=FALSE, 
 # Outputs:
 #   datetime:   POSIXct object
 get_cel_datetime <- function(filename) {
-    require(affyio);
     h <- affyio::read.celfile.header(filename, info="full");
     if  (length(h$ScanDate) > 0) {
         h$ScanDate <- gsub(pattern = "T", replacement = " ", x = h$ScanDate);
@@ -60,7 +59,6 @@ get_cel_datetime <- function(filename) {
 # Outputs:
 #   chip type
 get_cel_chip <- function(filename) {
-	require(affyio);
 	h <- affyio::read.celfile.header(filename, info="full");
 	return(as.character(h$cdfName));
 }
@@ -69,6 +67,7 @@ get_cel_chip <- function(filename) {
 ### Main ######################################################################
 # Organize data for data table
 cel_files <- list.files(
+    path = "../CEL",
     pattern = "CEL",
     full.names = TRUE,
     recursive = TRUE
@@ -81,74 +80,9 @@ cel_samples <- sapply(
     USE.NAMES = FALSE
 );
 cel_datetimes <- sapply(cel_files, get_cel_datetime, USE.NAMES = FALSE);
-cel_means_rma <- rep(NA, length(cel_files));
-cel_means_mas5 <- rep(NA, length(cel_files));
-cel_medians_rma <- rep(NA, length(cel_files));
-cel_medians_mas5 <- rep(NA, length(cel_files));
-
-# Data stats (too much to handle all at once, need to break it down)
-for (i in seq(1, length(cel_files))) {
-    print(i);
-    data_affy <- ReadAffy(filenames = cel_files[i]);
-    data_affy_rma <- affy::rma(data_affy);
-    # data_affy_mas5 <- affy::mas5(data_affy);
-
-    cel_means_rma[i] <- mean(exprs(data_affy_rma));
-    cel_medians_rma[i] <- quantile(exprs(data_affy_rma), 0.5);
-    # cel_means_mas5[i] <- mean(exprs(data_affy_mas5));
-    # cel_medians_mas5[i] <- quantile(exprs(data_affy_mas5), 0.5);
-}
 
 cel_table <- data.table(
-    cel_samples,
-    cel_files,
-    cel_datetimes,
-    cel_means_rma,
-    cel_medians_rma
+    "Sample" = cel_samples,
+    "Path" = cel_files,
+    "DateTime" = cel_datetimes
 );
-names(cel_table) <- c("Sample", "Path", "DateTime", "RMA_Mean", "RMA_Median");
-
-# Histogram of dates
-length_out <- 10;
-delta <- (max(cel_datetimes, na.rm = TRUE) - min(cel_datetimes, na.rm = TRUE))/length_out;
-ix <- seq(min(cel_datetimes, na.rm = TRUE) - delta, max(cel_datetimes, na.rm = TRUE), length.out = length_out + 1);
-png("GPL570_dates_histogram.png", width = 3000, height = 1800, res = 300);
-hist(
-    cel_datetimes,
-    xaxt = "n",
-    xlab = "",
-    main = ""
-);
-title("Mean expression level of GPL570 chips");
-axis(
-    1,
-    at = ix,
-    labels = format(as.POSIXct(ix, origin="1970-01-01"), format= "%Y-%M-%d"),
-    las = 2,
-    cex.axis = 0.75
-);
-dev.off();
-
-png("GPL570_rma_mean.png", width = 3000, height = 1800, res = 300);
-plot(data.table(cel_table$DateTime, cel_table$RMA_Mean), xaxt = "n", xlab = "");
-title("Mean expression level of GPL570 chips");
-axis(
-    1,
-    at = ix,
-    labels = format(as.POSIXct(ix, origin="1970-01-01"), format= "%Y-%M-%d"),
-    las = 2,
-    cex.axis = 0.75
-);
-dev.off();
-
-png("GPL570_rma_median.png", width = 3000, height = 1800, res = 300);
-plot(data.table(cel_table$DateTime, cel_table$RMA_Mean), xaxt = "n", xlab = "");
-title("Median expression level of GPL570 chips");
-axis(
-    1,
-    at = ix,
-    labels = format(as.POSIXct(ix, origin="1970-01-01"), format= "%Y-%M-%d"),
-    las = 2,
-    cex.axis = 0.75
-);
-dev.off();
