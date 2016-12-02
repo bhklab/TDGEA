@@ -1,2 +1,5 @@
 CEL/*
+Figures/Expression/*
 .DS_Store
+*.RData
+.Rhistory
