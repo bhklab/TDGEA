@@ -77,68 +77,50 @@ get_cel_chip <- function(filename) {
 
 ### Main ######################################################################
 # Organize data for data table
-batches <- c("GSE19615", "GSE18864", "GSE3744", "GSE12276", "GSE20711");
+dbs <- c("GSE19615", "GSE18864", "GSE3744", "GSE12276", "GSE20711");
 cel_files <- list();
-affy_batches <- list();
-affy_batches_rma <- list();
-affy_batches_mas5 <- list();
+affy_dbs <- list();
+affy_dbs_rma <- list();
+affy_dbs_mas5 <- list();
 
-# Load, process, and normalize CEL files based on batch
-for (batch in batches) {
-    cel_files[[batch]] <- list.files(
-        path = paste("../CEL/", batch, "_RAW", sep = ""),
+# Load, process, and normalize CEL files based on GSE
+for (GSE in dbs) {
+    cel_files[[GSE]] <- list.files(
+        path = paste("../CEL/", GSE, "_RAW", sep = ""),
         pattern = "CEL",
         full.names = TRUE,
         recursive = TRUE
     );
 
-    # Normalize by batch
-    affy_batches[[batch]] <- affy::ReadAffy(filenames = cel_files[[batch]]);    # read in to AffyBatch object
-    affy_batches_rma[[batch]] <- affy::rma(affy_batches[[batch]]);              # RMA normalize
-    affy_batches_mas5[[batch]] <- affy::mas5(affy_batches[[batch]]);            # MAS5 normalize
+    # Normalize by GSE
+    affy_dbs[[GSE]] <- affy::ReadAffy(filenames = cel_files[[GSE]]);    # read in to AffyBatch object
+    affy_dbs_rma[[GSE]] <- affy::rma(affy_dbs[[GSE]]);              # RMA normalize
+    affy_dbs_mas5[[GSE]] <- affy::mas5(affy_dbs[[GSE]]);            # MAS5 normalize
 }
 
 # build structure for recalling datetimes based on sample names
 # these calls will be made often below, so this is saving processing
-gene_names <- geneNames(affy_batches[[batches[1]]]); # can do this since all batches have the same genes
+gene_names <- geneNames(affy_dbs[[dbs[1]]]); # can do this since all dbs have the same genes
 cel_datetimes <- list();
 # get datetimes for CEL files
-for (batch in batches) {
-    cel_datetimes[[batch]] <- sapply(cel_files[[batch]], get_cel_datetime);
-}
-
-# Organize expression of each gene probe by DateTime
-gene_exprs_rma <- list();
-gene_exprs_mas5 <- list();
-for (batch in batches) {
-    for (gene in gene_names) {
-        # RMA normalized gene expression
-        gene_exprs_rma[[gene]] <- rbind(
-            gene_exprs_rma[[gene]],
-            data.table(
-                "DateTime" = cel_datetimes[[batch]],
-                "Expression" = exprs(affy_batches_rma[[batch]])[gene,]
-            )
-        );
-
-        # MAS5 normalized gene expression
-        gene_exprs_mas5[[gene]] <- rbind(
-            gene_exprs_mas5[[gene]],
-            data.table(
-                "DateTime" = cel_datetimes[[batch]],
-                "Expression" = exprs(affy_batches_mas5[[batch]])[gene,]
-            )
-        );
-    }
+for (GSE in dbs) {
+    cel_datetimes[[GSE]] <- sapply(cel_files[[GSE]], get_cel_datetime);
 }
 
 # p-values of linear regression having no slope
-p_values <- data.table(
-    "RMA" = lapply(
-        gene_names,
-        function(gene) {
-            gene_lm <- lm(gene_exprs_rma[[gene]]$Expression ~ gene_exprs_rma[[gene]]$DateTime);
-            gene_summary <- summary.lm(gene_lm);
+p_values_rma <- list();
+p_values_mas5 <- list();
+q_values_rma <- list();
+q_values_mas5 <- list();
+for (GSE in dbs) {
+    print(GSE);
+    # apply regression test to each row of matrix containing expression for a probe at the time it was taken
+    p_values_rma[[GSE]] <- apply(
+        exprs(affy_dbs_rma[[GSE]]),
+        1,
+        function (a) {
+            probe_lm <- lm(a ~ cel_datetimes[[GSE]]);
+            gene_summary <- summary.lm(probe_lm);
             return(pf(
                 gene_summary$fstatistic[1],
                 gene_summary$fstatistic[2],
@@ -146,12 +128,13 @@ p_values <- data.table(
                 lower.tail = FALSE)
             );
         }
-    ),
-    "MAS5" = lapply(
-        gene_names,
-        function(gene) {
-            gene_lm <- lm(gene_exprs_mas5[[gene]]$Expression ~ gene_exprs_mas5[[gene]]$DateTime);
-            gene_summary <- summary.lm(gene_lm);
+    );
+    p_values_mas5[[GSE]] <- apply(
+        exprs(affy_dbs_mas5[[GSE]]),
+        1,
+        function (a) {
+            probe_lm <- lm(a ~ cel_datetimes[[GSE]]);
+            gene_summary <- summary.lm(probe_lm);
             return(pf(
                 gene_summary$fstatistic[1],
                 gene_summary$fstatistic[2],
@@ -159,19 +142,15 @@ p_values <- data.table(
                 lower.tail = FALSE)
             );
         }
-    )
-);
+    );
 
-# q-values after FDR correction
-q_values <- data.table(
-    "RMA" = p.adjust(p_values$RMA, method = "fdr"),
-    "MAS5" = p.adjust(p_values$MAS5, method = "fdr")
-);
-# significant gene probes after correction
-sig_gene_names <- data.table(
-    "RMA" = gene_names[which(q_values$RMA < 0.01)],
-    "MAS5" = gene_names[which(q_values$MAS5 < 0.01)]
-);
+    # q-values after FDR correction
+    q_values_rma[[GSE]] <- p.adjust(p_values_rma[[GSE]], method = "fdr");
+    q_values_mas5[[GSE]] <- p.adjust(p_values_mas5[[GSE]], method = "fdr");
+}
+
+# mapping gene probes to other formats
+hgu_probe_map <- select(hgu133plus2.db, gene_names, c("SYMBOL","ENTREZID"));
 
 # cel_samples <- sapply(
 #     cel_files,
