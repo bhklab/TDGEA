@@ -18,6 +18,7 @@ sigma <- list(
     "RMA"      = 0.467,
     "GCRMA-EB" = 0.459
 );
+significance <- 0.05;
 
 ### Functions #################################################################
 # list_dirs
@@ -148,6 +149,32 @@ for (GSE in dbs) {
     q_values_rma[[GSE]] <- p.adjust(p_values_rma[[GSE]], method = "fdr");
     q_values_mas5[[GSE]] <- p.adjust(p_values_mas5[[GSE]], method = "fdr");
 }
+
+# count the number of times a particular gene probe is ranked significant in each DB
+sig_genes_rma <- sapply(
+    gene_names,
+    function (gene) {
+        count <- 0;
+        for (GSE in dbs) {
+            if (q_values_rma[[GSE]][gene] < significance) {
+                count <- count + 1;
+            }
+        }
+        return(count);
+    }
+);
+sig_genes_mas5 <- sapply(
+    gene_names,
+    function (gene) {
+        count <- 0;
+        for (GSE in dbs) {
+            if (q_values_mas5[[GSE]][gene] < significance) {
+                count <- count + 1;
+            }
+        }
+        return(count);
+    }
+);
 
 # mapping gene probes to other formats
 hgu_probe_map <- select(hgu133plus2.db, gene_names, c("SYMBOL","ENTREZID"));
