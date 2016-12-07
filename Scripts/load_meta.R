@@ -3,6 +3,7 @@
 #biocLite("affxparser");
 #biocLite("affyio");
 #biocLite("hgu133plus2.db")
+#biocLite("sva")
 
 ### Environment ###############################################################
 library("affy");
@@ -10,14 +11,8 @@ library("affyio");
 library("affyPLM");
 library("data.table");
 library("hgu133plus2.db");
+library("sva");
 
-# From DOI: 10.1186/1471-2105-6-214
-sigma <- list(
-    "dCHIP"    = 0.469,
-    "MAS5"     = 0.475,
-    "RMA"      = 0.467,
-    "GCRMA-EB" = 0.459
-);
 significance <- 0.05;
 
 ### Functions #################################################################
@@ -77,7 +72,7 @@ get_cel_chip <- function(filename) {
 
 
 ### Main ######################################################################
-# Organize data for data table
+### Organize data for data table
 dbs <- c("GSE19615", "GSE18864", "GSE3744", "GSE12276", "GSE20711");
 cel_files <- list();
 affy_dbs <- list();
@@ -95,8 +90,8 @@ for (GSE in dbs) {
 
     # Normalize by GSE
     affy_dbs[[GSE]] <- affy::ReadAffy(filenames = cel_files[[GSE]]);    # read in to AffyBatch object
-    affy_dbs_rma[[GSE]] <- affy::rma(affy_dbs[[GSE]]);              # RMA normalize
-    affy_dbs_mas5[[GSE]] <- affy::mas5(affy_dbs[[GSE]]);            # MAS5 normalize
+    affy_dbs_rma[[GSE]] <- affy::rma(affy_dbs[[GSE]]);                  # RMA normalize
+    affy_dbs_mas5[[GSE]] <- affy::mas5(affy_dbs[[GSE]]);                # MAS5 normalize
 }
 
 # build structure for recalling datetimes based on sample names
@@ -108,72 +103,107 @@ for (GSE in dbs) {
     cel_datetimes[[GSE]] <- sapply(cel_files[[GSE]], get_cel_datetime);
 }
 
+### Regression analysis
 # p-values of linear regression having no slope
-p_values_rma <- list();
-p_values_mas5 <- list();
-q_values_rma <- list();
-q_values_mas5 <- list();
+regr_values_rma <- list();
+regr_values_mas5 <- list();
 for (GSE in dbs) {
     print(GSE);
     # apply regression test to each row of matrix containing expression for a probe at the time it was taken
-    p_values_rma[[GSE]] <- apply(
+    regr_values_rma[[GSE]] <- t(apply(
         exprs(affy_dbs_rma[[GSE]]),
         1,
         function (a) {
             probe_lm <- lm(a ~ cel_datetimes[[GSE]]);
             gene_summary <- summary.lm(probe_lm);
-            return(pf(
-                gene_summary$fstatistic[1],
-                gene_summary$fstatistic[2],
-                gene_summary$fstatistic[3],
-                lower.tail = FALSE)
-            );
+            return(c(gene_summary$coefficients[2,4], gene_summary$coefficients[2,1]));
         }
-    );
-    p_values_mas5[[GSE]] <- apply(
+    ));
+    # q-values after FDR correction
+    regr_values_rma[[GSE]] <- cbind(regr_values_rma[[GSE]], p.adjust(regr_values_rma[[GSE]][,1], method = "fdr"));
+    colnames(regr_values_rma[[GSE]]) <- c("p", "coeff", "q");
+
+    regr_values_mas5[[GSE]] <- t(apply(
         exprs(affy_dbs_mas5[[GSE]]),
         1,
         function (a) {
             probe_lm <- lm(a ~ cel_datetimes[[GSE]]);
             gene_summary <- summary.lm(probe_lm);
-            return(pf(
-                gene_summary$fstatistic[1],
-                gene_summary$fstatistic[2],
-                gene_summary$fstatistic[3],
-                lower.tail = FALSE)
-            );
+            return(c(gene_summary$coefficients[2,4], gene_summary$coefficients[2,1]));
         }
-    );
-
+    ));
     # q-values after FDR correction
-    q_values_rma[[GSE]] <- p.adjust(p_values_rma[[GSE]], method = "fdr");
-    q_values_mas5[[GSE]] <- p.adjust(p_values_mas5[[GSE]], method = "fdr");
+    regr_values_mas5[[GSE]] <- cbind(regr_values_mas5[[GSE]], p.adjust(regr_values_mas5[[GSE]][,1], method = "fdr"));
+    colnames(regr_values_mas5[[GSE]]) <- c("p", "coeff", "q");
 }
 
 # count the number of times a particular gene probe is ranked significant in each DB
 sig_genes_rma <- sapply(
-    gene_names,
-    function (gene) {
-        count <- 0;
-        for (GSE in dbs) {
-            if (q_values_rma[[GSE]][gene] < significance) {
-                count <- count + 1;
+    dbs,
+    function (GSE) {
+        return(sum(sapply(
+            gene_names,
+            function (gene) {
+                return(regr_values_rma[[GSE]][gene, "q"] < significance);
             }
-        }
-        return(count);
+        )));
     }
 );
 sig_genes_mas5 <- sapply(
-    gene_names,
-    function (gene) {
-        count <- 0;
-        for (GSE in dbs) {
-            if (q_values_mas5[[GSE]][gene] < significance) {
-                count <- count + 1;
+    dbs,
+    function (GSE) {
+        return(sum(sapply(
+            gene_names,
+            function (gene) {
+                return(regr_values_mas5[[GSE]][gene, "q"] < significance);
             }
-        }
-        return(count);
+        )));
     }
+);
+
+
+### SVA/ComBat correction
+pheno_rma <- sapply(
+    dbs,
+    function (GSE) {
+        val <- cbind(pData(affy_dbs_rma[[GSE]]), cel_datetimes[[GSE]]);
+        colnames(val) <- c("Sample", "DateTime");
+        return(val);
+    },
+    simplify = FALSE
+);
+model_rma_null <- sapply(
+    dbs,
+    function (GSE) {
+        return(model.matrix(~as.factor(DateTime), data=pheno_rma[[GSE]]));
+    },
+    simplify = FALSE
+);
+model_rma_full <- sapply(
+    dbs,
+    function (GSE) {
+        return(model.matrix(~as.factor(DateTime), data=pheno_rma[[GSE]]));
+    },
+    simplify = FALSE
+);
+model_rma_nsv <- sapply(
+    dbs,
+    function (GSE) {
+        return(num.sv(exprs(affy_dbs_rma[[GSE]]), model_rma_full[[GSE]], method = "leek"));
+    },
+    simplify = FALSE
+);
+model_rma_sva <- sapply(
+    dbs,
+    function (GSE) {
+        return(sva(
+            exprs(affy_dbs_rma[[GSE]]),
+            model_rma_full[[GSE]],
+            model_rma_null[[GSE]],
+            n.sv = model_rma_nsv[[GSE]]
+        ));
+    },
+    simplify = FALSE
 );
 
 # mapping gene probes to other formats
