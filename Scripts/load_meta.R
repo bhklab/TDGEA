@@ -107,6 +107,7 @@ for (GSE in dbs) {
 # p-values of linear regression having no slope
 regr_values_rma <- list();
 regr_values_mas5 <- list();
+regr_log2_mas5 <- list();
 for (GSE in dbs) {
     print(GSE);
     # apply regression test to each row of matrix containing expression for a probe at the time it was taken
@@ -123,6 +124,7 @@ for (GSE in dbs) {
     regr_values_rma[[GSE]] <- cbind(regr_values_rma[[GSE]], p.adjust(regr_values_rma[[GSE]][,1], method = "fdr"));
     colnames(regr_values_rma[[GSE]]) <- c("p", "coeff", "q");
 
+    # apply regression test to each row of matrix containing expression for a probe at the time it was taken
     regr_values_mas5[[GSE]] <- t(apply(
         exprs(affy_dbs_mas5[[GSE]]),
         1,
@@ -135,6 +137,20 @@ for (GSE in dbs) {
     # q-values after FDR correction
     regr_values_mas5[[GSE]] <- cbind(regr_values_mas5[[GSE]], p.adjust(regr_values_mas5[[GSE]][,1], method = "fdr"));
     colnames(regr_values_mas5[[GSE]]) <- c("p", "coeff", "q");
+
+    # apply regression test to each row of matrix containing expression for a probe at the time it was taken
+    regr_log2_mas5[[GSE]] <- t(apply(
+        exprs(affy_dbs_mas5[[GSE]]),
+        1,
+        function (a) {
+            probe_lm <- lm(log2(a) ~ cel_datetimes[[GSE]]); # log2(expression data), making it more comparable to RMA 
+            gene_summary <- summary.lm(probe_lm);
+            return(c(gene_summary$coefficients[2,4], gene_summary$coefficients[2,1]));
+        }
+    ));
+    # q-values after FDR correction
+    regr_log2_mas5[[GSE]] <- cbind(regr_log2_mas5[[GSE]], p.adjust(regr_log2_mas5[[GSE]][,1], method = "fdr"));
+    colnames(regr_log2_mas5[[GSE]]) <- c("p", "coeff", "q");
 }
 
 # count the number of times a particular gene probe is ranked significant in each DB
@@ -175,7 +191,7 @@ pheno_rma <- sapply(
 model_rma_null <- sapply(
     dbs,
     function (GSE) {
-        return(model.matrix(~as.factor(DateTime), data=pheno_rma[[GSE]]));
+        return(model.matrix(~DateTime, data=pheno_rma[[GSE]]));
     },
     simplify = FALSE
 );
@@ -208,19 +224,3 @@ model_rma_sva <- sapply(
 
 # mapping gene probes to other formats
 hgu_probe_map <- select(hgu133plus2.db, gene_names, c("SYMBOL","ENTREZID"));
-
-# cel_samples <- sapply(
-#     cel_files,
-#     function(x) {
-#         return(sub(pattern = "(.*?)\\..*$", replacement = "\\1", basename(x)));
-#     },
-#     USE.NAMES = FALSE
-# );
-# cel_datetimes <- sapply(cel_files, get_cel_datetime, USE.NAMES = FALSE);
-
-# cel_table <- data.table(
-#     "Sample" = cel_samples,
-#     "Path" = cel_files,
-#     "DateTime" = cel_datetimes
-# );
-
