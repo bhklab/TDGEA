@@ -13,7 +13,7 @@ library("data.table");
 library("hgu133plus2.db");
 library("sva");
 
-significance <- 0.05;
+significance <- 0.01;
 
 ### Functions #################################################################
 # list_dirs
