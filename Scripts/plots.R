@@ -78,3 +78,30 @@ for (gene in gene_names) {
     );
     dev.off();
 }
+
+# Volcano plots for RMA expression
+xlims <- list(
+    "GSE3744" = 2e-6,
+    "GSE12276" = 1e-7,
+    "GSE18864" = 2e-7,
+    "GSE19615" = 5e-8,
+    "GSE20711" = 4e-6
+)
+for (GSE in dbs) {
+    png(
+        paste("GPL570_volcano_RMA_", GSE, ".png", sep = ""),
+        width = 3000,
+        height = 1800,
+        res = 300
+    );
+    plot(
+        x = regr_values_rma[[GSE]][,"coeff"],
+        y = -log10(regr_values_rma[[GSE]][,"q"]),
+        pch = ".",
+        xlim = c(-xlims[[GSE]], xlims[[GSE]]),
+        xlab = "Regression coefficient",
+        ylab = "-log10(q) (FDR adjusted)"
+    );
+    abline(h = 2, lty = 2);
+    dev.off()
+}
