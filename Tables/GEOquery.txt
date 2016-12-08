@@ -1,0 +1,5 @@
+Query:
+GPL570[accn] AND "gse"[filter] AND "homo sapiens"[organism] AND "breast"[All Fields]
+
+Result:
+527 results, not all are related. I've used a subset of 5 datasets for preliminary analysis (see MetaGxData_table1A.csv)
