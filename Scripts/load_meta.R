@@ -13,7 +13,8 @@ library("data.table");
 library("hgu133plus2.db");
 library("sva");
 
-significance <- 0.01;
+significance      <- 0.01;
+correction_method <- "fdr";
 
 ### Functions #################################################################
 # list_dirs
@@ -27,7 +28,13 @@ significance <- 0.01;
 #   ignore.case:    Ignore case or not for matching (default: FALSE)
 # Outputs:
 #   List of strings containing directory names
-list_dirs <- function(path=".", pattern=NULL, all.dirs=FALSE, full.names=FALSE, ignore.case=FALSE) {
+list_dirs <- function(
+    path        = ".",
+    pattern     = NULL,
+    all.dirs    = FALSE,
+    full.names  = FALSE,
+    ignore.case = FALSE
+    ) {
     # use full.names=TRUE to pass to file.info
     all <- list.files(path, pattern, all.dirs, full.names=TRUE, recursive=FALSE, ignore.case);
     dirs <- all[file.info(all)$isdir];
@@ -68,6 +75,26 @@ get_cel_datetime <- function(filename) {
 get_cel_chip <- function(filename) {
 	h <- affyio::read.celfile.header(filename, info="full");
 	return(as.character(h$cdfName));
+}
+
+# date_to_batch
+# Description:
+#   Given a list of POSIXct values, map dates together and form surrogate batches
+# Inputs:
+#   dates:    Input vector of dates
+# Outputs:
+#   Vector of batch numbers, 1-N, where N is the unique number of dates in the input
+date_to_batch <- function(dates) {
+    dates_formatted <- format(as.POSIXct(dates, origin = "1970-01-01"), format = "%Y-%m-%d");
+    dates_unique <- unique(dates_formatted);
+    
+    # map formatted dates against the unique dates in the list, and number them
+    return(sapply(
+        dates_formatted,
+        function (date) {
+            return(match(date, dates_unique))
+        }
+    ));
 }
 
 
@@ -121,7 +148,10 @@ for (GSE in dbs) {
         }
     ));
     # q-values after FDR correction
-    regr_values_rma[[GSE]] <- cbind(regr_values_rma[[GSE]], p.adjust(regr_values_rma[[GSE]][,1], method = "fdr"));
+    regr_values_rma[[GSE]] <- cbind(
+        regr_values_rma[[GSE]],
+        p.adjust(regr_values_rma[[GSE]][,1], method = correction_method)
+    );
     colnames(regr_values_rma[[GSE]]) <- c("p", "coeff", "q");
 
     # apply regression test to each row of matrix containing expression for a probe at the time it was taken
@@ -135,7 +165,11 @@ for (GSE in dbs) {
         }
     ));
     # q-values after FDR correction
-    regr_values_mas5[[GSE]] <- cbind(regr_values_mas5[[GSE]], p.adjust(regr_values_mas5[[GSE]][,1], method = "fdr"));
+    regr_values_mas5[[GSE]] <- cbind(
+        regr_values_mas5[[GSE]],
+        p.adjust(regr_values_mas5[[GSE]][,1],
+        method = correction_method)
+    );
     colnames(regr_values_mas5[[GSE]]) <- c("p", "coeff", "q");
 
     # apply regression test to each row of matrix containing expression for a probe at the time it was taken
@@ -149,7 +183,11 @@ for (GSE in dbs) {
         }
     ));
     # q-values after FDR correction
-    regr_log2_mas5[[GSE]] <- cbind(regr_log2_mas5[[GSE]], p.adjust(regr_log2_mas5[[GSE]][,1], method = "fdr"));
+    regr_log2_mas5[[GSE]] <- cbind(
+        regr_log2_mas5[[GSE]],
+        p.adjust(regr_log2_mas5[[GSE]][,1],
+        method = correction_method)
+    );
     colnames(regr_log2_mas5[[GSE]]) <- c("p", "coeff", "q");
 }
 
@@ -182,8 +220,12 @@ sig_genes_mas5 <- sapply(
 pheno_rma <- sapply(
     dbs,
     function (GSE) {
-        val <- cbind(pData(affy_dbs_rma[[GSE]]), cel_datetimes[[GSE]]);
-        colnames(val) <- c("Sample", "DateTime");
+        val <- cbind(
+            pData(affy_dbs_rma[[GSE]]),
+            format(as.POSIXct(cel_datetimes[[GSE]], origin = "1970-01-01"), format = "%Y-%m-%d"),
+            format(as.POSIXct(cel_datetimes[[GSE]], origin = "1970-01-01"), format = "%H:%M:%S")
+        );
+        colnames(val) <- c("Sample", "Date", "Time", "Batch");
         return(val);
     },
     simplify = FALSE
@@ -191,14 +233,42 @@ pheno_rma <- sapply(
 model_rma_null <- sapply(
     dbs,
     function (GSE) {
-        return(model.matrix(~DateTime, data=pheno_rma[[GSE]]));
+        return(model.matrix(~1, data=pheno_rma[[GSE]]));
     },
     simplify = FALSE
 );
+combat_rma_edata <- sapply(
+    dbs,
+    function (GSE) {
+        return(ComBat(
+            dat = exprs(affy_dbs_rma[[GSE]]),
+            batch = pheno_rma[[GSE]]$Date,
+            mod = model_rma_null[[GSE]],
+            par.prior = TRUE,
+            prior.plots = FALSE
+        ));
+    },
+    simplify = FALSE
+);
+combat_rma_pvalues <- sapply(
+    dbs,
+    function (GSE) {
+        return(f.pvalue(combat_rma_edata[[GSE]], model_rma_full[[GSE]], model_rma_null[[GSE]]));
+    },
+    simplify = FALSE
+);
+combat_rma_qvalues <- sapply(
+    dbs,
+    function (GSE) {
+        return(p.adjust(combat_rma_pvalues[[GSE]], method = correction_method));
+    },
+    simplify = FALSE
+);
+
 model_rma_full <- sapply(
     dbs,
     function (GSE) {
-        return(model.matrix(~as.factor(DateTime), data=pheno_rma[[GSE]]));
+        return(model.matrix(~as.factor(Date), data=pheno_rma[[GSE]]));
     },
     simplify = FALSE
 );
