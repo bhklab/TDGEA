@@ -4,6 +4,7 @@
 #biocLite("affyio");
 #biocLite("hgu133plus2.db")
 #biocLite("sva")
+#install.packages("jsonlite");
 
 ### Environment ###############################################################
 library("affy");
@@ -12,6 +13,7 @@ library("affyPLM");
 library("data.table");
 library("hgu133plus2.db");
 library("sva");
+library("jsonlite");
 
 significance      <- 0.01;
 correction_method <- "fdr";
@@ -130,7 +132,7 @@ for (GSE in dbs) {
     cel_datetimes[[GSE]] <- sapply(cel_files[[GSE]], get_cel_datetime);
 }
 
-### Regression analysis
+### Regression analysis #########################
 # p-values of linear regression having no slope
 regr_values_rma <- list();
 regr_values_mas5 <- list();
@@ -191,6 +193,8 @@ for (GSE in dbs) {
     colnames(regr_log2_mas5[[GSE]]) <- c("p", "coeff", "q");
 }
 
+### Map significant genes #######################
+hgu_probe_map <- select(hgu133plus2.db, gene_names, c("SYMBOL", "ENTREZID", "GENENAME"));
 # count the number of times a particular gene probe is ranked significant in each DB
 sig_genes_rma <- sapply(
     dbs,
@@ -215,8 +219,16 @@ sig_genes_mas5 <- sapply(
     }
 );
 
+# get info for probes that are consistently significant
+probe_info <- t(sapply(
+    # names of probes that are significant in 4 of the 5 datasets
+    names(which(sig_genes_rma == 4)),
+    function (probe_id) {
+        return(hgu_probe_map[which(hgu_probe_map[,"PROBEID"] == probe_id),-1]);
+    }
+));
 
-### SVA/ComBat correction
+### SVA/ComBat correction #######################
 pheno_rma <- sapply(
     dbs,
     function (GSE) {
@@ -291,6 +303,3 @@ model_rma_sva <- sapply(
     },
     simplify = FALSE
 );
-
-# mapping gene probes to other formats
-hgu_probe_map <- select(hgu133plus2.db, gene_names, c("SYMBOL","ENTREZID"));
