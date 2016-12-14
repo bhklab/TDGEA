@@ -240,24 +240,6 @@ for (GSE in dbs) {
     colnames(regr_values_rma[[GSE]]) <- c("p", "coeff", "q");
 
     # apply regression test to each row of matrix containing expression for a probe at the time it was taken
-    regr_values_mas5[[GSE]] <- t(apply(
-        exprs(affy_dbs_mas5[[GSE]]),
-        1,
-        function (a) {
-            probe_lm <- lm(a ~ cel_datetimes[[GSE]]);
-            gene_summary <- summary.lm(probe_lm);
-            return(c(gene_summary$coefficients[2,4], gene_summary$coefficients[2,1]));
-        }
-    ));
-    # q-values after FDR correction
-    regr_values_mas5[[GSE]] <- cbind(
-        regr_values_mas5[[GSE]],
-        p.adjust(regr_values_mas5[[GSE]][,1],
-        method = correction_method)
-    );
-    colnames(regr_values_mas5[[GSE]]) <- c("p", "coeff", "q");
-
-    # apply regression test to each row of matrix containing expression for a probe at the time it was taken
     regr_log2_mas5[[GSE]] <- t(apply(
         exprs(affy_dbs_mas5[[GSE]]),
         1,
@@ -290,13 +272,13 @@ sig_genes_rma <- sapply(
         )));
     }
 );
-sig_genes_mas5 <- sapply(
+sig_genes_log2_mas5 <- sapply(
     dbs,
     function (GSE) {
         return(sum(sapply(
             gene_names,
             function (gene) {
-                return(regr_values_mas5[[GSE]][gene, "q"] < significance);
+                return(regr_log2_mas5[[GSE]][gene, "q"] < significance);
             }
         )));
     }

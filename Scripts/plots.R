@@ -134,13 +134,6 @@ xlims_rma <- list(
     "GSE19615" = 5e-8,
     "GSE20711" = 4e-6
 )
-xlims_mas5 <- list(
-    "GSE3744" = 8e-3,
-    "GSE12276" = 3e-4,
-    "GSE18864" = 7e-3,
-    "GSE19615" = 5e-4,
-    "GSE20711" = 5e-2
-)
 xlims_log2mas5 <- list(
     "GSE3744" = 3e-6,
     "GSE12276" = 1e-7,
@@ -158,22 +151,6 @@ for (GSE in dbs) {
     plot(
         x = regr_values_rma[[GSE]][,"coeff"],
         y = -log10(regr_values_rma[[GSE]][,"q"]),
-        pch = ".",
-        xlab = "Regression coefficient",
-        ylab = "-log10(q) (FDR adjusted)"
-    );
-    abline(h = 2, lty = 2);
-    dev.off()
-
-    png(
-        paste("GPL570_volcano_MAS5_", GSE, ".png", sep = ""),
-        width = 3000,
-        height = 1800,
-        res = 300
-    );
-    plot(
-        x = regr_values_mas5[[GSE]][,"coeff"],
-        y = -log10(regr_values_mas5[[GSE]][,"q"]),
         pch = ".",
         xlab = "Regression coefficient",
         ylab = "-log10(q) (FDR adjusted)"
