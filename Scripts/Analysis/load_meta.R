@@ -139,7 +139,7 @@ gds_detailed_url <- URLencode(paste0(
 gds_detailed_results <- fromJSON(getURL(gds_detailed_url));
 
 # extract accession names (GSENNNN) from query results
-dbs <- sapply(
+dbs_full <- sapply(
     gds_detailed_results$result$uids,
     function (x) {
         return(gds_detailed_results$result[[x]]$accession)
@@ -149,8 +149,8 @@ dbs <- sapply(
 
 # download datasets
 gds_download_url <- "ftp://ftp.ncbi.nlm.nih.gov/geo/series";
-# removing DBs that don't have CEL files (or multiple CEL files) available, or don't match cell line, or other criteria
-dbs <- dbs[c(-48, -62, -66, -69, -82, -108, -110, -112, -113)];
+# removing DBs that don't have CEL files available, or don't match cell line, or other criteria
+dbs <- dbs_full[c(-48, -62, -66, -69, -82, -108, -110, -112, -113)];
 
 # downloading proper datasets
 for (GSE in dbs) {
