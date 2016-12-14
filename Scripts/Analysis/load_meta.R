@@ -12,6 +12,7 @@ library("affy");
 library("affyio");
 library("affyPLM");
 library("data.table");
+library("ggplot2");
 library("hgu133plus2.db");
 library("jsonlite");
 library("RCurl");
