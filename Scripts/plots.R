@@ -159,7 +159,6 @@ for (GSE in dbs) {
         x = regr_values_rma[[GSE]][,"coeff"],
         y = -log10(regr_values_rma[[GSE]][,"q"]),
         pch = ".",
-        xlim = c(-xlims_rma[[GSE]], xlims_rma[[GSE]]),
         xlab = "Regression coefficient",
         ylab = "-log10(q) (FDR adjusted)"
     );
@@ -176,7 +175,6 @@ for (GSE in dbs) {
         x = regr_values_mas5[[GSE]][,"coeff"],
         y = -log10(regr_values_mas5[[GSE]][,"q"]),
         pch = ".",
-        xlim = c(-xlims_mas5[[GSE]], xlims_mas5[[GSE]]),
         xlab = "Regression coefficient",
         ylab = "-log10(q) (FDR adjusted)"
     );
@@ -193,7 +191,6 @@ for (GSE in dbs) {
         x = regr_log2_mas5[[GSE]][,"coeff"],
         y = -log10(regr_log2_mas5[[GSE]][,"q"]),
         pch = ".",
-        xlim = c(-xlims_log2mas5[[GSE]], xlims_log2mas5[[GSE]]),
         xlab = "Regression coefficient",
         ylab = "-log10(q) (FDR adjusted)"
     );

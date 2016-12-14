@@ -4,6 +4,7 @@
 #biocLite("affyio");
 #biocLite("hgu133plus2.db")
 #biocLite("sva")
+#biocLite("rentrez");
 #install.packages("jsonlite");
 
 ### Environment ###############################################################
@@ -12,8 +13,11 @@ library("affyio");
 library("affyPLM");
 library("data.table");
 library("hgu133plus2.db");
-library("sva");
 library("jsonlite");
+library("RCurl");
+library("rentrez");
+library("sva");
+library("XML");
 
 significance      <- 0.01;
 correction_method <- "fdr";
@@ -101,8 +105,85 @@ date_to_batch <- function(dates) {
 
 
 ### Main ######################################################################
-### Organize data for data table
-dbs <- c("GSE19615", "GSE18864", "GSE3744", "GSE12276", "GSE20711");
+### Query datasets ##############################
+# search parameters (these can be changed for other queries)
+gds_query_params <- c(
+    "GSE[ETYP]",
+    "GPL570[ACCN]",
+    "\"breast\"[ALL]",
+    "\"homo sapiens\"[ORGN]",
+    "(MCF7[SRC] OR MCF-7[SRC])"
+);
+# initial data query URL
+gds_url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gds&term=";
+gds_params <- "&retmax=5000&usehistory=y&retmode=json";
+# detailed information URL from previous query
+gds_url <- URLencode(paste0(
+    gds_url,
+    do.call("paste", as.list(c(gds_query_params, sep = "+AND+"))),
+    gds_params
+));
+# extract query information from resulting XML 
+gds_query_results <- fromJSON(getURL(gds_url));
+
+# perform detailed query
+gds_detailed_url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=gds";
+gds_detailed_url <- URLencode(paste0(
+    gds_detailed_url,
+    "&query_key=",
+    gds_query_results$esearchresult$querykey,
+    "&WebEnv=",
+    gds_query_results$esearchresult$webenv,
+    gds_params
+));
+gds_detailed_results <- fromJSON(getURL(gds_detailed_url));
+
+# extract accession names (GSENNNN) from query results
+dbs <- sapply(
+    gds_detailed_results$result$uids,
+    function (x) {
+        return(gds_detailed_results$result[[x]]$accession)
+    },
+    USE.NAMES = FALSE
+);
+
+# download datasets
+gds_download_url <- "ftp://ftp.ncbi.nlm.nih.gov/geo/series";
+# removing DBs that don't have CEL files (or multiple CEL files) available, or don't match cell line, or other criteria
+dbs <- dbs[c(-48, -62, -66, -69, -82, -108, -110, -112, -113)];
+
+# downloading proper datasets
+for (GSE in dbs) {
+    # need substring to form full FTP URL
+    series_name <- substr(GSE, 1, nchar(GSE)-3);
+    # combine strings to make FTP URL
+    full_url <- paste(
+        gds_download_url,
+        paste0(series_name, "nnn"),
+        GSE,
+        "suppl",
+        paste0(GSE, "_RAW.tar"),
+        sep = "/"
+    );
+    # download data file
+    download.file(
+        url = full_url,
+        destfile = paste0("~/Documents/TDGEA/CEL/", GSE, "_RAW.tar")
+    );
+}
+
+### Preprocess data ###########################################################
+print("Loading CEL files");
+dbs <- c(
+    "GSE6800",
+    "GSE6803",
+    "GSE7161",
+    "GSE7327",
+    "GSE8139",
+    "GSE8140",
+    "GSE8141",
+    "GSE8565"
+);
 cel_files <- list();
 affy_dbs <- list();
 affy_dbs_rma <- list();
@@ -110,8 +191,9 @@ affy_dbs_mas5 <- list();
 
 # Load, process, and normalize CEL files based on GSE
 for (GSE in dbs) {
+    print(GSE);
     cel_files[[GSE]] <- list.files(
-        path = paste("../CEL/", GSE, "_RAW", sep = ""),
+        path = paste0("../CEL/", GSE, "_RAW"),
         pattern = "CEL",
         full.names = TRUE,
         recursive = TRUE
@@ -133,6 +215,7 @@ for (GSE in dbs) {
 }
 
 ### Regression analysis #########################
+print("Regression Analysis");
 # p-values of linear regression having no slope
 regr_values_rma <- list();
 regr_values_mas5 <- list();
