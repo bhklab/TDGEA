@@ -1,17 +1,23 @@
 # Volcano plots for RMA expression
 xlims_rma <- list(
-    "GSE3744" = 2e-6,
-    "GSE12276" = 1e-7,
-    "GSE18864" = 2e-7,
-    "GSE19615" = 5e-8,
-    "GSE20711" = 4e-6
+    "GSE6800" = 1.5e-7,
+    "GSE6803" = 1.7e-7,
+    "GSE7161" = 1.5e-3,
+    "GSE7327" = 1.2e-6,
+    "GSE8139" = 2e-7,
+    "GSE8140" = 1e-6,
+    "GSE8141" = 2.5e-7,
+    "GSE8565" = 6e-7
 )
-xlims_log2mas5 <- list(
-    "GSE3744" = 3e-6,
-    "GSE12276" = 1e-7,
-    "GSE18864" = 3e-7,
-    "GSE19615" = 6e-8,
-    "GSE20711" = 4e-6
+xlims_log2_mas5 <- list(
+    "GSE6800" = 4e-7,
+    "GSE6803" = 4e-7,
+    "GSE7161" = 1.5e-3,
+    "GSE7327" = 1.5e-6,
+    "GSE8139" = 2.7e-7,
+    "GSE8140" = 1.5e-6,
+    "GSE8141" = 3.5e-7,
+    "GSE8565" = 8e-7
 );
 for (GSE in dbs) {
     png(
@@ -23,6 +29,7 @@ for (GSE in dbs) {
     plot(
         x = regr_values_rma[[GSE]][,"coeff"],
         y = -log10(regr_values_rma[[GSE]][,"q"]),
+        xlim = c(-xlims_rma[[GSE]], xlims_rma[[GSE]]),
         pch = ".",
         xlab = "Regression coefficient",
         ylab = "-log10(q) (FDR adjusted)"
@@ -39,6 +46,7 @@ for (GSE in dbs) {
     plot(
         x = regr_log2_mas5[[GSE]][,"coeff"],
         y = -log10(regr_log2_mas5[[GSE]][,"q"]),
+        xlim = c(-xlims_log2_mas5[[GSE]], xlims_log2_mas5[[GSE]]),
         pch = ".",
         xlab = "Regression coefficient",
         ylab = "-log10(q) (FDR adjusted)"
