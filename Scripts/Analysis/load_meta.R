@@ -193,7 +193,7 @@ affy_dbs_mas5 <- list();
 for (GSE in dbs) {
     print(GSE);
     cel_files[[GSE]] <- list.files(
-        path = paste0("../CEL/", GSE, "_RAW"),
+        path = paste0("../../CEL/", GSE, "_RAW"),
         pattern = "CEL",
         full.names = TRUE,
         recursive = TRUE
