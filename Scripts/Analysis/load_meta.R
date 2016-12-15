@@ -106,84 +106,14 @@ date_to_batch <- function(dates) {
 
 
 ### Main ######################################################################
-### Query datasets ##############################
-# search parameters (these can be changed for other queries)
-gds_query_params <- c(
-    "GSE[ETYP]",
-    "GPL570[ACCN]",
-    "\"breast\"[ALL]",
-    "\"homo sapiens\"[ORGN]",
-    "(MCF7[SRC] OR MCF-7[SRC])"
-);
-# initial data query URL
-gds_url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gds&term=";
-gds_params <- "&retmax=5000&usehistory=y&retmode=json";
-# detailed information URL from previous query
-gds_url <- URLencode(paste0(
-    gds_url,
-    do.call("paste", as.list(c(gds_query_params, sep = "+AND+"))),
-    gds_params
-));
-# extract query information from resulting XML 
-gds_query_results <- fromJSON(getURL(gds_url));
-
-# perform detailed query
-gds_detailed_url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=gds";
-gds_detailed_url <- URLencode(paste0(
-    gds_detailed_url,
-    "&query_key=",
-    gds_query_results$esearchresult$querykey,
-    "&WebEnv=",
-    gds_query_results$esearchresult$webenv,
-    gds_params
-));
-gds_detailed_results <- fromJSON(getURL(gds_detailed_url));
-
-# extract accession names (GSENNNN) from query results
-dbs_full <- sapply(
-    gds_detailed_results$result$uids,
-    function (x) {
-        return(gds_detailed_results$result[[x]]$accession)
-    },
-    USE.NAMES = FALSE
-);
-
-# download datasets
-gds_download_url <- "ftp://ftp.ncbi.nlm.nih.gov/geo/series";
-# removing DBs that don't have CEL files available, or don't match cell line, or other criteria
-dbs <- dbs_full[c(-48, -62, -66, -69, -82, -108, -110, -112, -113)];
-
-# downloading proper datasets
-for (GSE in dbs) {
-    # need substring to form full FTP URL
-    series_name <- substr(GSE, 1, nchar(GSE)-3);
-    # combine strings to make FTP URL
-    full_url <- paste(
-        gds_download_url,
-        paste0(series_name, "nnn"),
-        GSE,
-        "suppl",
-        paste0(GSE, "_RAW.tar"),
-        sep = "/"
-    );
-    # download data file
-    download.file(
-        url = full_url,
-        destfile = paste0("~/Documents/TDGEA/CEL/", GSE, "_RAW.tar")
-    );
-}
-
 ### Preprocess data ###########################################################
 print("Loading CEL files");
 dbs <- c(
-    "GSE6800",
-    "GSE6803",
-    "GSE7161",
-    "GSE7327",
-    "GSE8139",
-    "GSE8140",
-    "GSE8141",
-    "GSE8565"
+    "GSE9891",
+    "GSE18520",
+    "GSE26193",
+    # "GSE30161", # removed because of lack of dates
+    "GSE44104"
 );
 cel_files <- list();
 affy_dbs <- list();
@@ -194,7 +124,7 @@ affy_dbs_mas5 <- list();
 for (GSE in dbs) {
     print(GSE);
     cel_files[[GSE]] <- list.files(
-        path = paste0("../../CEL/", GSE, "_RAW"),
+        path = paste0("../CEL/", GSE, "_RAW"),
         pattern = "CEL",
         full.names = TRUE,
         recursive = TRUE
@@ -203,7 +133,7 @@ for (GSE in dbs) {
     # Normalize by GSE
     affy_dbs[[GSE]] <- affy::ReadAffy(filenames = cel_files[[GSE]]);    # read in to AffyBatch object
     affy_dbs_rma[[GSE]] <- affy::rma(affy_dbs[[GSE]]);                  # RMA normalize
-    affy_dbs_mas5[[GSE]] <- affy::mas5(affy_dbs[[GSE]]);                # MAS5 normalize
+    # affy_dbs_mas5[[GSE]] <- affy::mas5(affy_dbs[[GSE]]);              # MAS5 normalize
 }
 
 # build structure for recalling datetimes based on sample names

@@ -20,8 +20,8 @@ p1 <- (
     + ggtitle("Significant probe expression")
     + xlab("Linear regression slope")
     + ylab("-log10(q) (FDR adjusted)")
-    + xlim(c(-1.5e-6, 1.5e-6))
     + guides(colour = guide_legend(override.aes = list(alpha = 1)))
+    + xlim(c(-7.5e-7, 7.5e-7))
     # + ylim(c(4,6))
     # + scale_x_datetime(date_labels = "%Y-%m-%d", date_breaks = "4 month")
     # + theme(
