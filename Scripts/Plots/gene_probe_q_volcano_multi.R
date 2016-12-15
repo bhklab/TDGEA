@@ -1,7 +1,6 @@
 # Scatterplot of median RMA-normalized values
 q_data <- data.frame();
 for (GSE in dbs) {
-    med_col <- apply(exprs(affy_dbs_rma[[GSE]]), 2, median);
     q_data <- rbind.data.frame(
         q_data,
         cbind.data.frame(
