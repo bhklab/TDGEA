@@ -1,4 +1,6 @@
 ### Regression analysis #########################
+correction_method <- "fdr";
+
 print("Regression Analysis");
 # p-values of linear regression having no slope
 regr_values_rma <- list();

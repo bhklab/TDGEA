@@ -1,4 +1,5 @@
 ### Map significant genes #######################
+significance  <- 0.05;
 hgu_probe_map <- select(hgu133plus2.db, gene_names, c("SYMBOL", "ENTREZID", "GENENAME"));
 # count the number of times a particular gene probe is ranked significant in each DB
 sig_genes_rma <- sapply(

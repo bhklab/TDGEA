@@ -12,16 +12,12 @@ library("affy");
 library("affyio");
 library("affyPLM");
 library("data.table");
-library("ggplot2");
 library("hgu133plus2.db");
 library("jsonlite");
 library("RCurl");
 library("rentrez");
 library("sva");
-library("XML");
 
-significance      <- 0.01;
-correction_method <- "fdr";
 
 ### Functions #################################################################
 # list_dirs
@@ -182,14 +178,15 @@ download_dbs <- function(series, download_dir = getwd()) {
 ### Main ######################################################################
 ### Query datasets ##############################
 # search parameters (these can be changed for other queries)
-dbs_full <- query_dbs(c(
-    "GSE[ETYP]",
-    "GPL570[ACCN]",
-    "\"homo sapiens\"[ORGN]",
-    "A2780[SRC]"
-));
-dbs <- dbs_full[c(-1, -2, -3, -4, -5, -8, -12, -16)];
-download_dbs(dbs, "~/Documents/TDGEA/CEL/");
+dbs <- c(
+    "GSE6800",
+    "GSE6803",
+    "GSE7161",
+    "GSE7327",
+    "GSE8139",
+    "GSE8140",
+    "GSE8565"
+);
 
 
 ### Preprocess data #############################
