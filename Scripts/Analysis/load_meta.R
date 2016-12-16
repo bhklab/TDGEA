@@ -104,6 +104,80 @@ date_to_batch <- function(dates) {
     ));
 }
 
+# query_dbs
+# Description:
+#   Query GEO Datasets
+# Inputs:
+#   query_params:    Array of string queries
+# Outputs:
+#   dbs:    List of series resulting from the query
+query_dbs <- function(query_params) {
+    # initial data query URL
+    gds_url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gds&term=";
+    gds_params <- "&retmax=5000&usehistory=y&retmode=json";
+    # detailed information URL from previous query
+    gds_url <- URLencode(paste0(
+        gds_url,
+        do.call("paste", as.list(c(query_params, sep = "+AND+"))),
+        gds_params
+    ));
+    # extract query information from resulting XML 
+    gds_query_results <- fromJSON(getURL(gds_url));
+    
+    # perform detailed query
+    gds_detailed_url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=gds";
+    gds_detailed_url <- URLencode(paste0(
+        gds_detailed_url,
+        "&query_key=",
+        gds_query_results$esearchresult$querykey,
+        "&WebEnv=",
+        gds_query_results$esearchresult$webenv,
+        gds_params
+    ));
+    gds_detailed_results <- fromJSON(getURL(gds_detailed_url));
+
+    # extract accession names (GSENNNN) from query results
+    dbs <- sapply(
+        gds_detailed_results$result$uids,
+        function (x) {
+            return(gds_detailed_results$result[[x]]$accession)
+        },
+        USE.NAMES = FALSE
+    );
+}
+
+# download_dbs
+# Description:
+#   Download data series from GEO Datasets
+# Inputs:
+#   series:         Array of series identifiers
+#   download_dir:   Directory to download files to
+download_dbs <- function(series, download_dir = getwd()) {
+    gds_download_url <- "ftp://ftp.ncbi.nlm.nih.gov/geo/series";
+
+    # downloading proper datasets
+    for (GSE in series) {
+        # need substring to form full FTP URL
+        series_name <- substr(GSE, 1, nchar(GSE)-3);
+        # combine strings to make FTP URL
+        full_url <- paste(
+            gds_download_url,
+            paste0(series_name, "nnn"),
+            GSE,
+            "suppl",
+            paste0(GSE, "_RAW.tar"),
+            sep = "/"
+        );
+
+        # download data file
+        download.file(
+            url = full_url,
+            destfile = paste0(download_dir, GSE, "_RAW.tar")
+        );
+    }
+    
+}
+
 
 ### Main ######################################################################
 ### Preprocess data ###########################################################
