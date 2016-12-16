@@ -21,18 +21,3 @@ for (GSE in dbs) {
     );
     colnames(regr_values_rma[[GSE]]) <- c("p", "coeff", "q");
 }
-
-### Map significant genes #######################
-hgu_probe_map <- select(hgu133plus2.db, gene_names, c("SYMBOL", "ENTREZID", "GENENAME"));
-# count the number of times a particular gene probe is ranked significant in each DB
-sig_genes_rma <- sapply(
-    dbs,
-    function (GSE) {
-        return(sum(sapply(
-            gene_names,
-            function (gene) {
-                return(regr_values_rma[[GSE]][gene, "q"] < significance);
-            }
-        )));
-    }
-);
