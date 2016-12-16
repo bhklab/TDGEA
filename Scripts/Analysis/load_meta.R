@@ -178,15 +178,13 @@ download_dbs <- function(series, download_dir = getwd()) {
 ### Main ######################################################################
 ### Query datasets ##############################
 # search parameters (these can be changed for other queries)
-dbs <- c(
-    "GSE6800",
-    "GSE6803",
-    "GSE7161",
-    "GSE7327",
-    "GSE8139",
-    "GSE8140",
-    "GSE8565"
-);
+dbs_full <- query_dbs(c(
+    "GSE[ETYP]",
+    "GPL570[ACCN]",
+    "\"homo sapiens\"[ORGN]",
+    "A2780[SRC]"
+));
+dbs <- dbs_full[c(-1, -2, -3, -4, -5, -8, -12, -16)];
 
 
 ### Preprocess data #############################
@@ -194,7 +192,7 @@ print("Loading CEL files");
 cel_files <- list();
 affy_dbs <- list();
 affy_dbs_rma <- list();
-affy_dbs_mas5 <- list();
+# affy_dbs_mas5 <- list();
 
 # Load, process, and normalize CEL files based on GSE
 for (GSE in dbs) {

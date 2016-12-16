@@ -213,21 +213,22 @@ for (GSE in dbs) {
     );
 }
 xlims <- list(
-    "GSE6800" = 1.5e-7,
-    "GSE6803" = 1.75e-7,
-    "GSE7161" = 1.25e-3,
-    "GSE7327" = 1.25e-6,
-    "GSE8139" = 1.75e-7,
-    "GSE8140" = 1e-6,
-    "GSE8565" = 7.5e-7
+    "GSE28646" = 1.5e-3,
+    "GSE24547" = 2.5e-3,
+    "GSE18498" = 1e-3,
+    "GSE18486" = 4.5e-4,
+    "GSE18504" = 6e-5,
+    "GSE15372" = 3e-4,
+    "GSE15709" = 3e-4,
+    "GSE9826"  = 3e-7
 );
 
 
 # Volcano plot for entire collection
 volcano_multi(
     input_data = q_data,
-    filename = "rma_q_MCF7.png",
-    title = "MCF7 microarray probe expression",
+    filename = "rma_q_AD2780.png",
+    title = "AD2780 microarray probe expression",
     xlab = "Linear regression slope",
     ylab = "-log10(q) (FDR adjusted)",
     xlim = 1.5e-6
@@ -238,7 +239,7 @@ for (GSE in dbs) {
     volcano_single(
         input_data = q_data,
         GSE = GSE,
-        filename = paste0("rma_q_MCF7_", GSE, ".png"),
+        filename = paste0("rma_q_AD2780_", GSE, ".png"),
         title = GSE,
         xlab = "Linear regression slope",
         ylab = "-log10(q) (FDR adjusted)",
