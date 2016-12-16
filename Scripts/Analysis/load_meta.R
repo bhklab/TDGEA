@@ -180,15 +180,20 @@ download_dbs <- function(series, download_dir = getwd()) {
 
 
 ### Main ######################################################################
-### Preprocess data ###########################################################
+### Query datasets ##############################
+# search parameters (these can be changed for other queries)
+dbs_full <- query_dbs(c(
+    "GSE[ETYP]",
+    "GPL570[ACCN]",
+    "\"homo sapiens\"[ORGN]",
+    "A2780[SRC]"
+));
+dbs <- dbs_full[c(-1, -2, -3, -4, -5, -8, -12, -16)];
+download_dbs(dbs, "~/Documents/TDGEA/CEL/");
+
+
+### Preprocess data #############################
 print("Loading CEL files");
-dbs <- c(
-    "GSE9891",
-    "GSE18520",
-    "GSE26193",
-    # "GSE30161", # removed because of lack of dates
-    "GSE44104"
-);
 cel_files <- list();
 affy_dbs <- list();
 affy_dbs_rma <- list();
