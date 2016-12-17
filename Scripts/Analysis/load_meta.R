@@ -178,13 +178,13 @@ download_dbs <- function(series, download_dir = getwd()) {
 ### Main ######################################################################
 ### Query datasets ##############################
 # search parameters (these can be changed for other queries)
-dbs_full <- query_dbs(c(
-    "GSE[ETYP]",
-    "GPL570[ACCN]",
-    "\"homo sapiens\"[ORGN]",
-    "A2780[SRC]"
-));
-dbs <- dbs_full[c(-1, -2, -3, -4, -5, -8, -12, -16)];
+dbs <- c(
+    "GSE19615",
+    "GSE18864",
+    "GSE3744",
+    "GSE12276",
+    "GSE20711"
+); 
 
 
 ### Preprocess data #############################
