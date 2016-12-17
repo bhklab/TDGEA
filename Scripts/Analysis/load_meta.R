@@ -179,11 +179,10 @@ download_dbs <- function(series, download_dir = getwd()) {
 ### Query datasets ##############################
 # search parameters (these can be changed for other queries)
 dbs <- c(
-    "GSE19615",
-    "GSE18864",
-    "GSE3744",
-    "GSE12276",
-    "GSE20711"
+    "GSE9891",
+    "GSE18520",
+    "GSE26193",
+    "GSE44104"
 ); 
 
 
