@@ -1,6 +1,5 @@
-CEL/*
-Figures/Expression/*
+data/raw/*
 .DS_Store
 *.RData
-.Rhistory
+*.Rhistory
 SOW.md
