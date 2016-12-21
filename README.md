@@ -8,5 +8,6 @@ Generally follows this procedure:
 1. Open R
 1. Set working directory as `src`
 1. Load data with `source("data/load_meta.R");`
-1. Create regression models with `source("analysis/probe_regression.R");`
-1. Create plots with `source("visualization/plots.R");`
+1. Analyze data using a script of choice in the `analysis` folder
+1. Load plotting functions with `source("visualization/plotting_functions.R");`
+1. Create plots with a corresponding script in the `visualization` folder
