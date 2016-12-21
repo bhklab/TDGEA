@@ -194,7 +194,7 @@ cel_files <- sapply(
     dbs,
     function (GSE) {
         return(list.files(
-            path = paste0("../CEL/", GSE, "_RAW"),
+            path = paste0("../data/raw/", GSE, "_RAW"),
             pattern = "CEL",
             full.names = TRUE,
             recursive = TRUE
