@@ -10,22 +10,22 @@ for (GSE in dbs) {
         )
     );
 }
-xlims <- list(
-    "GSE9891" =  1e-7,
-    "GSE18520" = 2.5e-7,
-    "GSE26193" = 4e-8,
-    "GSE44104" = 6e-7
-);
 
+xlims <- sapply(
+    dbs,
+    function (GSE) {
+        return(max(abs(regr_values_rma[[GSE]])));
+    }
+);
 
 # Volcano plot for entire collection
 volcano_multi(
     input_data = q_data,
-    filename = "rma_q_metagx_ovarian.png",
+    filename = "rma_regr_metagx_ovarian.png",
     title = "MetaGx Ovarian microarray probe expression",
     xlab = "Linear regression slope",
     ylab = "-log10(q) (FDR adjusted)",
-    xlim = 1.25e-7
+    xlim = max(xlims)
 );
 
 # Volcano plots for each dataset in collection
@@ -33,11 +33,11 @@ for (GSE in dbs) {
     volcano_single(
         input_data = q_data,
         GSE = GSE,
-        filename = paste0("rma_q_metagx_ovarian_", GSE, ".png"),
+        filename = paste0("rma_regr_metagx_ovarian_", GSE, ".png"),
         title = GSE,
         xlab = "Linear regression slope",
         ylab = "-log10(q) (FDR adjusted)",
-        xlim = xlims[[GSE]],
+        xlim = xlims[GSE],
         res = 600
     );
 }

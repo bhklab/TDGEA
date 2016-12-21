@@ -2,6 +2,7 @@
 correction_method <- "fdr";
 
 print("Regression Analysis");
+
 # p-values of linear regression having no slope
 regr_values_rma <- sapply(
     dbs,
@@ -12,7 +13,7 @@ regr_values_rma <- sapply(
             exprs(affy_dbs_rma[[GSE]]),
             1,
             function (a) {
-                probe_lm <- lm(a ~ cel_datetimes[[GSE]]);
+                probe_lm <- lm(a ~ scaled_datetimes[[GSE]]);
                 gene_summary <- summary.lm(probe_lm);
                 return(c(gene_summary$coefficients[2,4], gene_summary$coefficients[2,1]));
             }

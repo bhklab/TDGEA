@@ -174,6 +174,23 @@ download_dbs <- function(series, download_dir = getwd()) {
     
 }
 
+# rescale
+# Description:
+#   Linearly rescale array of values to within a new range
+# Inputs:
+#   x:              Values to be rescaled
+#   lower:          Minimum value of new scale
+#   upper:          Maximum value of new scale
+# Outputs:
+#   scaled_values:  Rescaled values
+rescale <- function(x, lower = 0, upper = 1) {
+    if (max(x) == min(x)) {
+        stop("Cannot be rescaled, max and min values are equal.");
+    }
+    m <- (upper - lower)/(max(x) - min(x));
+    return(m*(x-min(x)) + lower);
+}
+
 
 ### Main ######################################################################
 ### Query datasets ##############################
@@ -186,8 +203,7 @@ dbs <- c(
 ); 
 
 
-### Preprocess data #############################
-# Load, process, and normalize CEL files based on GSE
+### Find CEL files and DateTimes ################
 print("Loading CEL files");
 # list of CEL files
 cel_files <- sapply(
@@ -203,7 +219,7 @@ cel_files <- sapply(
     simplify = FALSE
 );
 
-# recal DateTimes based on sample names
+# recall DateTimes based on sample names
 # can do this since all dbs have the same gene probes (all on the same platform)
 gene_names <- geneNames(affy_dbs[[dbs[1]]]);
 # get datetimes for CEL files
@@ -215,7 +231,8 @@ cel_datetimes <- sapply(
     simplify = FALSE
 );
 
-# filter out arrays with no DateTime info in the header
+
+### Filter microarrays with no DateTime info ####
 # get CEL files with no times
 no_times <- sapply(
     dbs,
@@ -243,7 +260,16 @@ cel_datetimes <- sapply(
     simplify = FALSE
 );
 
+# scale DateTimes to be in [0,1]
+scaled_datetimes <- sapply (
+    dbs,
+    function (GSE) {
+        return(rescale(cel_datetimes[[GSE]]));
+    },
+    simplify = FALSE
+);
 
+### Normalize data ##############################
 # RMA-normalized data from CEL files
 affy_dbs_rma <- sapply(
     dbs,
