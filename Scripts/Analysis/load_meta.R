@@ -187,33 +187,69 @@ dbs <- c(
 
 
 ### Preprocess data #############################
-print("Loading CEL files");
-cel_files <- list();
-affy_dbs <- list();
-affy_dbs_rma <- list();
-# affy_dbs_mas5 <- list();
-
 # Load, process, and normalize CEL files based on GSE
-for (GSE in dbs) {
-    print(GSE);
-    cel_files[[GSE]] <- list.files(
-        path = paste0("../CEL/", GSE, "_RAW"),
-        pattern = "CEL",
-        full.names = TRUE,
-        recursive = TRUE
-    );
+print("Loading CEL files");
+# list of CEL files
+cel_files <- sapply(
+    dbs,
+    function (GSE) {
+        return(list.files(
+            path = paste0("../CEL/", GSE, "_RAW"),
+            pattern = "CEL",
+            full.names = TRUE,
+            recursive = TRUE
+        ));
+    },
+    simplify = FALSE
+);
 
-    # Normalize by GSE
-    affy_dbs[[GSE]] <- affy::ReadAffy(filenames = cel_files[[GSE]]);    # read in to AffyBatch object
-    affy_dbs_rma[[GSE]] <- affy::rma(affy_dbs[[GSE]]);                  # RMA normalize
-    # affy_dbs_mas5[[GSE]] <- affy::mas5(affy_dbs[[GSE]]);              # MAS5 normalize
-}
-
-# build structure for recalling datetimes based on sample names
-# these calls will be made often below, so this is saving processing
-gene_names <- geneNames(affy_dbs[[dbs[1]]]); # can do this since all dbs have the same genes
-cel_datetimes <- list();
+# recal DateTimes based on sample names
+# can do this since all dbs have the same gene probes (all on the same platform)
+gene_names <- geneNames(affy_dbs[[dbs[1]]]);
 # get datetimes for CEL files
-for (GSE in dbs) {
-    cel_datetimes[[GSE]] <- sapply(cel_files[[GSE]], get_cel_datetime);
-}
+cel_datetimes <- sapply(
+    dbs,
+    function (GSE) {
+        return(sapply(cel_files[[GSE]], get_cel_datetime));
+    },
+    simplify = FALSE
+);
+
+# filter out arrays with no DateTime info in the header
+# get CEL files with no times
+no_times <- sapply(
+    dbs,
+    function (GSE) {
+        return(-which(is.na(cel_datetimes[[GSE]])));
+    },
+    simplify = FALSE
+);
+
+# remove from list of CEL files
+cel_files <- sapply(
+    dbs,
+    function (GSE) {
+        return(cel_files[[GSE]][no_times[[GSE]]]);
+    },
+    simplify = FALSE
+);
+
+# remove from DateTimes
+cel_datetimes <- sapply(
+    dbs,
+    function (GSE) {
+        return(cel_datetimes[[GSE]][no_times[[GSE]]]);
+    },
+    simplify = FALSE
+);
+
+
+# RMA-normalized data from CEL files
+affy_dbs_rma <- sapply(
+    dbs,
+    function (GSE) {
+        print(GSE);
+        return(affy::justRMA(filenames = cel_files[[GSE]]));
+    },
+    simplify = FALSE
+);
