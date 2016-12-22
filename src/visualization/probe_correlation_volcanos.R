@@ -21,8 +21,8 @@ xlims <- sapply(
 # Volcano plot for entire collection
 volcano_multi(
     input_data = q_data,
-    filename = "rma_corr_metagx_ovarian.png",
-    title = "MetaGx Ovarian microarray correlation",
+    filename = "../reports/figures/Correlation Volcano/rma_corr_metagx_breast.png",
+    title = "MetaGx Breast microarray correlation",
     xlab = "Spearman correlation",
     ylab = "-log10(q) (FDR adjusted)",
     xlim = max(xlims)
@@ -33,7 +33,7 @@ for (GSE in dbs) {
     volcano_single(
         input_data = q_data,
         GSE = GSE,
-        filename = paste0("rma_corr_metagx_ovarian_", GSE, ".png"),
+        filename = paste0("../reports/figures/Correlation Volcano/rma_corr_metagx_breast_", GSE, ".png"),
         title = GSE,
         xlab = "Spearman correlation",
         ylab = "-log10(q) (FDR adjusted)",

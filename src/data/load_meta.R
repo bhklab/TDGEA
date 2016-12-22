@@ -196,10 +196,11 @@ rescale <- function(x, lower = 0, upper = 1) {
 ### Query datasets ##############################
 # search parameters (these can be changed for other queries)
 dbs <- c(
-    "GSE9891",
-    "GSE18520",
-    "GSE26193",
-    "GSE44104"
+    "GSE3744",
+    "GSE12276",
+    "GSE18864",
+    "GSE19615",
+    "GSE20711"
 ); 
 
 
@@ -220,8 +221,6 @@ cel_files <- sapply(
 );
 
 # recall DateTimes based on sample names
-# can do this since all dbs have the same gene probes (all on the same platform)
-gene_names <- geneNames(affy_dbs[[dbs[1]]]);
 # get datetimes for CEL files
 cel_datetimes <- sapply(
     dbs,
@@ -246,7 +245,13 @@ no_times <- sapply(
 cel_files <- sapply(
     dbs,
     function (GSE) {
-        return(cel_files[[GSE]][no_times[[GSE]]]);
+        # if all CELs have times, return the original list (need special case for list because of R syntax and indexing)
+        if (isEmpty(no_times[[GSE]])) {
+            return(cel_files[[GSE]]);            
+        # remove CELs with missing times
+        } else {
+            return(cel_files[[GSE]][no_times[[GSE]]]);
+        }
     },
     simplify = FALSE
 );
@@ -255,7 +260,13 @@ cel_files <- sapply(
 cel_datetimes <- sapply(
     dbs,
     function (GSE) {
-        return(cel_datetimes[[GSE]][no_times[[GSE]]]);
+        # if all CELs have times, return the original list (need special case for list because of R syntax and indexing)
+        if (isEmpty(no_times[[GSE]])) {
+            return(cel_datetimes[[GSE]]);            
+        # remove CELs with missing times
+        } else {
+            return(cel_datetimes[[GSE]][no_times[[GSE]]]);
+        }
     },
     simplify = FALSE
 );
@@ -288,3 +299,6 @@ affy_dbs_rma <- sapply(
     },
     simplify = FALSE
 );
+
+# can do this since all dbs have the same gene probes (all on the same platform)
+gene_names <- geneNames(affy_dbs_rma[[dbs[1]]]);
