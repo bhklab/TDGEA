@@ -299,6 +299,3 @@ affy_dbs_rma <- sapply(
     },
     simplify = FALSE
 );
-
-# can do this since all dbs have the same gene probes (all on the same platform)
-gene_names <- geneNames(affy_dbs_rma[[dbs[1]]]);
