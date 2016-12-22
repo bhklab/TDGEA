@@ -1,5 +1,5 @@
 ### Regression analysis #########################
-correction_method <- "fdr";
+correction_method <- "bonferroni";
 
 print("Regression Analysis");
 

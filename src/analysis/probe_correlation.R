@@ -1,6 +1,6 @@
 ### Spearman correlation tests ################################################
 correlation_method <- "spearman";
-correction_method <- "fdr";
+correction_method <- "bonferroni";
 
 print("Correlation Analysis");
 
