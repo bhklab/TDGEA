@@ -260,6 +260,15 @@ cel_datetimes <- sapply(
     simplify = FALSE
 );
 
+# if a DB has no CELs remaining (i.e. no time info for any of them), remove empty DBs so they're not considered
+for (GSE in dbs) {
+    if (isEmpty(cel_datetimes[[GSE]])) {
+        cel_datetimes[[GSE]] <- NULL;
+        cel_files[[GSE]] <- NULL;
+        dbs <- dbs[- which(dbs == GSE)];
+    }
+}
+
 # scale DateTimes to be in [0,1]
 scaled_datetimes <- sapply (
     dbs,
