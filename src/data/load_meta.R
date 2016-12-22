@@ -196,14 +196,13 @@ rescale <- function(x, lower = 0, upper = 1) {
 ### Query datasets ##############################
 # search parameters (these can be changed for other queries)
 dbs <- c(
-    "GSE9826",
-    "GSE15372",
-    "GSE15709",
-    "GSE18486",
-    "GSE18498",
-    "GSE18504",
-    "GSE24547",
-    "GSE28646"
+    "GSE6800",
+    "GSE6803",
+    "GSE7161",
+    "GSE7327",
+    "GSE8139",
+    "GSE8140",
+    "GSE8565"
 ); 
 
 

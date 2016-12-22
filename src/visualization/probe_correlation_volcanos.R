@@ -21,8 +21,8 @@ xlims <- sapply(
 # Volcano plot for entire collection
 volcano_multi(
     input_data = q_data,
-    filename = "../reports/figures/Correlation Volcano/rma_corr_ad2780.png",
-    title = "AD2780 microarray correlation",
+    filename = "../reports/figures/Correlation Volcano/rma_corr_mcf7.png",
+    title = "MCF7 microarray correlation",
     xlab = "Spearman correlation",
     ylab = "-log10(q) (FDR adjusted)",
     xlim = max(xlims)
@@ -33,7 +33,7 @@ for (GSE in dbs) {
     volcano_single(
         input_data = q_data,
         GSE = GSE,
-        filename = paste0("../reports/figures/Correlation Volcano/rma_corr_ad2780_", GSE, ".png"),
+        filename = paste0("../reports/figures/Correlation Volcano/rma_corr_mcf7_", GSE, ".png"),
         title = GSE,
         xlab = "Spearman correlation",
         ylab = "-log10(q) (FDR adjusted)",
